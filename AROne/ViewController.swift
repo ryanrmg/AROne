@@ -10,7 +10,7 @@ import UIKit
 import SceneKit
 import ARKit
 
-class ViewController: UIViewController, ARSCNViewDelegate {
+class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
     
@@ -28,6 +28,12 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Set the scene to the view
         sceneView.scene = scene
+        
+        debugMode()
+    }
+    
+    func debugMode(){
+        self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -52,17 +58,27 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let results = sceneView.hitTest(touch.location(in: sceneView), types: [ARHitTestResult.ResultType.featurePoint])
         guard let hitFeature = results.last else { return }
         let hitTransform = hitFeature.worldTransform
-        let hitPosition = SCNVector3Make(hitTransform.columns.0.x, hitTransform.columns.1.y, hitTransform.columns.2.z)
+        let hitPosition = SCNVector3Make(hitTransform.columns.1.x, hitTransform.columns.1.y, hitTransform.columns.1.z)
+        print(hitTransform.columns.1.x)
+        print(hitTransform.columns.1.y)
+        print(hitTransform.columns.1.z)
         createBall(hitPosition: hitPosition)
     }
     
     func createBall(hitPosition : SCNVector3) {
-        let ball = SCNSphere(radius: 0.01)
+        let ball = SCNSphere(radius: 0.1)
         let newBallNode = SCNNode(geometry: ball)
         newBallNode.position = hitPosition
         self.sceneView.scene.rootNode.addChildNode(newBallNode)
     }
     
+    
+//    func createNet(){
+//        let net = SCNPlane.init(width: 10, height:10)
+//        let newNetNode = SCNNode(geometry: net)
+//        newNetNode.position = SCNVector3Make(0, 0, 0)
+//        self.sceneView.scene.rootNode.addChildNode(newNetNode)
+//    }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
