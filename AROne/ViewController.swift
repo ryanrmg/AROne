@@ -57,11 +57,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         guard let touch = touches.first else { return }
         let results = sceneView.hitTest(touch.location(in: sceneView), types: [ARHitTestResult.ResultType.featurePoint])
         guard let hitFeature = results.last else { return }
-        let hitTransform = hitFeature.worldTransform
-        let hitPosition = SCNVector3Make(hitTransform.columns.1.x, hitTransform.columns.1.y, hitTransform.columns.1.z)
-        print(hitTransform.columns.1.x)
-        print(hitTransform.columns.1.y)
-        print(hitTransform.columns.1.z)
+        let hitTransform = SCNMatrix4(hitFeature.worldTransform)
+        let hitPosition = SCNVector3Make(hitTransform.m41, hitTransform.m42, hitTransform.m43)
+        print(hitTransform.m41)
+        print(hitTransform.m42)
+        print(hitTransform.m43)
         createBall(hitPosition: hitPosition)
     }
     
@@ -72,13 +72,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         self.sceneView.scene.rootNode.addChildNode(newBallNode)
     }
     
-    
-//    func createNet(){
-//        let net = SCNPlane.init(width: 10, height:10)
-//        let newNetNode = SCNNode(geometry: net)
-//        newNetNode.position = SCNVector3Make(0, 0, 0)
-//        self.sceneView.scene.rootNode.addChildNode(newNetNode)
-//    }
+    func createNet(){
+        let net = SCNPlane.init(width: 1, height: 1)
+        let newNetNode = SCNNode(geometry: net)
+        newNetNode.position = SCNVector3Make(0, 0, -1)
+        self.sceneView.scene.rootNode.addChildNode(newNetNode)
+    }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
