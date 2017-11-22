@@ -13,6 +13,7 @@ import ARKit
 class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
+    var debug = true
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,11 +30,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         // Set the scene to the view
         sceneView.scene = scene
         
-        debugMode()
+        debugMode(a: true)
+        
+        sceneView.scene.physicsWorld.gravity = SCNVector3Make(0, -2.0, 0)
+        createTable()
     }
     
-    func debugMode(){
+    func debugMode(a: Bool){
         self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
+        let debug = a
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -59,9 +64,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         guard let hitFeature = results.last else { return }
         let hitTransform = SCNMatrix4(hitFeature.worldTransform)
         let hitPosition = SCNVector3Make(hitTransform.m41, hitTransform.m42, hitTransform.m43)
-        print(hitTransform.m41)
-        print(hitTransform.m42)
-        print(hitTransform.m43)
+        
+        if (debug){
+            print(hitTransform.m41)
+            print(hitTransform.m42)
+            print(hitTransform.m43)
+        }
+        
         createBall(hitPosition: hitPosition)
     }
     
@@ -69,14 +78,28 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         let ball = SCNSphere(radius: 0.1)
         let newBallNode = SCNNode(geometry: ball)
         newBallNode.position = hitPosition
+        let physicsBallShape = SCNPhysicsShape(node: newBallNode)
+        let physicsBallBody = SCNPhysicsBody.init(type: SCNPhysicsBodyType.dynamic, shape: physicsBallShape)
+        physicsBallBody.isAffectedByGravity = true
+        newBallNode.physicsBody = physicsBallBody
+        
+        ball.firstMaterial?.diffuse.contents = UIColor.blue
+        //newBallNode
         self.sceneView.scene.rootNode.addChildNode(newBallNode)
+        
     }
     
-    func createNet(){
-        let net = SCNPlane.init(width: 1, height: 1)
-        let newNetNode = SCNNode(geometry: net)
-        newNetNode.position = SCNVector3Make(0, 0, -1)
-        self.sceneView.scene.rootNode.addChildNode(newNetNode)
+    func createTable(){
+        let net = SCNBox(width: 1, height: 0.1, length: 1, chamferRadius: 0)
+        let netNode = SCNNode(geometry: net)
+        netNode.position = SCNVector3Make(0, -0.5, -1.0)
+        let physicsNetShape = SCNPhysicsShape(node: netNode)
+        let physicsNetBody = SCNPhysicsBody.init(type: SCNPhysicsBodyType.dynamic, shape: physicsNetShape)
+        netNode.physicsBody = physicsNetBody
+        physicsNetBody.isAffectedByGravity = false
+        
+        net.firstMaterial?.diffuse.contents = UIColor.green
+        self.sceneView.scene.rootNode.addChildNode(netNode)
     }
     
     override func didReceiveMemoryWarning() {
